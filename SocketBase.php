@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace yxmingy;
 abstract class SocketBase
 {
@@ -14,7 +15,7 @@ abstract class SocketBase
   protected $type;
   protected $protocol;
   
-  public function __construct(int $domin,int $type)
+  public function __construct(int $domin,int $type, $socket = null)
   {
     $this->domin_type = $domin;
     $this->type = $type;
@@ -29,25 +30,21 @@ abstract class SocketBase
         $this->protocol = getprotobyname("icmp");
         break;
       default:
-        throw new Exception("[Socket] Protocol type not exists!");
+        throw new \Exception("[Socket] Protocol type not exists!");
     }
-    $this->socket = socket_create($domin,$type,$this->protocol);
+    if($socket != null) {
+      $this->socket = $socket;
+    }else {
+      $this->socket = socket_create($domin,$type,$this->protocol);
+    }
     if($this->socket === false)
       throw $this->last_error();
-  }
-  
-  public function __construct(int $domin,int $type,int $protocol,resource $socket)
-  {
-    $this->domin_type = $domin;
-    $this->type = $type;
-    $this->protocol = $protocol;
-    $this->socket = $socket;
   }
   
   public function bind(string $address = '0',int $port = 0):SocketBase
   {
     socket_bind($this->socket,$address,$port);
-    return $this->socket;
+    return $this;
   }
   
   public function read(int $length = 1024):?string
@@ -61,11 +58,11 @@ abstract class SocketBase
     return $data;
   }
   
-  public function write(string $msg):?int
+  public function write(string $msg):SocketBase
   {
     $length = strlen($msg);
     while(true) {
-      $sent = $this->write($msg);
+      $sent = socket_write($this->socket,$msg,$length);
       if($sent === false)
         return null;
       if($sent < $length) {
@@ -74,7 +71,8 @@ abstract class SocketBase
       }else {
         break;
       }
-    } 
+    }
+    return $this;
   }
   
   public function shutdown():bool
@@ -93,9 +91,9 @@ abstract class SocketBase
     $this->close();
   }
   
-  protected function last_error():Exception
+  protected function last_error():\Exception
   {
-    return new Exception("[Socket] Error ".socket_strerror(socket_last_error()));
+    return new \Exception("[Socket] Error ".socket_strerror(socket_last_error()));
   }
   
   public function setBlock():bool

@@ -12,7 +12,7 @@ class ServerSocket extends SocketBase
       throw $this->last_error();
     return $this;
   }
-  public function origin_accept():resource
+  public function origin_accept()
   {
     return socket_accept($this->socket);
   }
@@ -23,7 +23,6 @@ class ServerSocket extends SocketBase
     return new ClientSocket(
       $this->domin_type,
       $this->type,
-      $this->protocol,
       $socket
     );
   }
