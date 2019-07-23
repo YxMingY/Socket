@@ -58,6 +58,12 @@ abstract class SocketBase
     return $data;
   }
   
+  public function receive(&$buffer,int $length = 1024):SocketBase
+  {
+    $buffer = $this->read($length);
+    return $this;
+  }
+  
   public function write(string $msg):SocketBase
   {
     $length = strlen($msg);
