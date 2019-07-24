@@ -20,6 +20,11 @@ class ClientSocket extends SocketBase
     return $code ? $address.":".$port : null;
   }
   
+  public function cid():?string
+  {
+    return md5($this->getPeerAddr());
+  }
+  
   public function recPeerName(&$name):SocketBase
   {
     $name = $this->getPeerName();

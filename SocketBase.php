@@ -14,6 +14,7 @@ abstract class SocketBase
   protected $domin_type;
   protected $type;
   protected $protocol;
+  protected $closed = false;
   
   public function __construct(int $domin = AF_INET,int $type = SOCK_STREAM, $socket = null)
   {
@@ -41,6 +42,7 @@ abstract class SocketBase
       throw $this->last_error();
   }
   
+  
   public function getServerInstance($resource)
   {
     return new ServerSocket($this->domin_type,$this->type,$resource);
@@ -56,8 +58,15 @@ abstract class SocketBase
     return $this;
   }
   
+  public function equals(SocketBase $socket)
+  {
+    return $socket->getSocketResource() == $this->socket;
+  }
+  
+  
   public function _read(int $length)
   {
+    if($this->closed) return "";
     return socket_read($this->socket,$length);
   }
   
@@ -80,6 +89,7 @@ abstract class SocketBase
   
   public function _write(string $msg,int $length)
   {
+    if($this->closed) return false;
     return socket_write($this->socket,$msg,$length);
   }
   
@@ -107,6 +117,7 @@ abstract class SocketBase
   
   public function close():void
   {
+    $this->closed = true;
     socket_close($this->socket);
   }
   
@@ -134,17 +145,6 @@ abstract class SocketBase
   public function getSocketResource()
   {
     return $this->socket;
-  }
-  
-  /* param SocketBase[] */
-  public static function getSocketResources(array $sockets):array
-  {
-    $res = [];
-    foreach($sockets as $socket)
-    {
-      $res[] = $socket->getSocketResource();
-    }
-    return $res;
   }
   
   public function getSockName():?string
