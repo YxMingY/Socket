@@ -19,16 +19,22 @@ class ServerSocket extends SocketBase
   public function accept():ClientSocket
   {
     $socket = $this->_accept();
-    
-    return new ClientSocket(
-      $this->domin_type,
-      $this->type,
-      $socket
-    );
+    return $this->getClientInstance($socket);
   }
-  public function select(array &$reads,array &$writes,array &$excepts,int $t_sec,int $t_usec = 0):int
+  public function _select(array &$reads,array &$writes,array &$excepts,int $t_sec,int $t_usec = 0):int
   {
     return socket_select($reads,$writes,$excepts,$t_sec,$t_usec);
+  }
+  
+  public function select(array &$reads,array &$writes,array &$excepts,int $t_sec,int $t_usec = 0):int
+  {
+    $reads = SocketBase::getSocketResources($reads);
+    $writes = SocketBase::getSocketResources($writes);
+    $excepts = SocketBase::getSocketResources($excepts);
+    $code = $this->select($reads,$writes,$excepts,$t_sec,$t_usec);
+    if($code > 0) {
+      foreach($writes)
+    }
   }
   
 }

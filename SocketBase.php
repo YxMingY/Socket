@@ -15,7 +15,7 @@ abstract class SocketBase
   protected $type;
   protected $protocol;
   
-  public function __construct(int $domin,int $type, $socket = null)
+  public function __construct(int $domin = AF_INET,int $type = SOCK_STREAM, $socket = null)
   {
     $this->domin_type = $domin;
     $this->type = $type;
@@ -39,6 +39,15 @@ abstract class SocketBase
     }
     if($this->socket === false)
       throw $this->last_error();
+  }
+  
+  public function getServerInstance($resource)
+  {
+    return new ServerSocket($this->domin_type,$this->type,$resource);
+  }
+  public function getClientInstance($resource)
+  {
+    return new ClientSocket($this->domin_type,$this->type,$resource);
   }
   
   public function bind(string $address = '0',int $port = 0):SocketBase
@@ -122,9 +131,19 @@ abstract class SocketBase
     return socket_set_nonblock($this->socket);
   }
   
-  public function getSocketResource():resource
+  public function getSocketResource()
   {
     return $this->socket;
+  }
+  
+  public static function getSocketResources(array $sockets):array
+  {
+    $res = [];
+    foreach($socket as $socket)
+    {
+      $res[] = $socket->getSocketResource();
+    }
+    return $res;
   }
   
   public function getSockName():?string
