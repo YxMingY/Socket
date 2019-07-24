@@ -74,7 +74,7 @@ abstract class SocketBase
     return socket_write($this->socket,$msg,$length);
   }
   
-  public function write(string $msg):SocketBase
+  public function write(string $msg):?SocketBase
   {
     $length = strlen($msg);
     while(true) {
