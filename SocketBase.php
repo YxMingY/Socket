@@ -47,9 +47,14 @@ abstract class SocketBase
     return $this;
   }
   
+  public function _read(int $length)
+  {
+    return socket_read($this->socket,$length);
+  }
+  
   public function read(int $length = 1024):?string
   {
-    $data = socket_read($this->socket,$length);
+    $data = $this->_read($length);
     if($data == "") {
       if($data === "")
         return null;
@@ -64,11 +69,16 @@ abstract class SocketBase
     return $this;
   }
   
+  public function _write(string $msg,int $length)
+  {
+    return socket_write($this->socket,$msg,$length);
+  }
+  
   public function write(string $msg):SocketBase
   {
     $length = strlen($msg);
     while(true) {
-      $sent = socket_write($this->socket,$msg,$length);
+      $sent = $this->_write($msg,$length);
       if($sent === false)
         return null;
       if($sent < $length) {
@@ -83,7 +93,7 @@ abstract class SocketBase
   
   public function shutdown():bool
   {
-    return socket_shutdown($this->socket,2);
+    return @socket_shutdown($this->socket,2);
   }
   
   public function close():void
@@ -116,5 +126,30 @@ abstract class SocketBase
   {
     return $this->socket;
   }
+  
+  public function getSockName():?string
+  {
+    $code = socket_getsockname($this->socket,$address);
+    return $code ? $address : null;
+  }
+  
+  public function getSockAddr():?string
+  {
+    $code = socket_getsockname($this->socket,$address,$port);
+    return $code ? $address.":".$port : null;
+  }
+  
+  public function recSockName(&$name):SocketBase
+  {
+    $name = $this->getSockName();
+    return $this;
+  }
+  
+  public function recSockAddr(&$addr):SocketBase
+  {
+    $addr = $this->getSockAddr();
+    return $this;
+  }
+  
   
 }

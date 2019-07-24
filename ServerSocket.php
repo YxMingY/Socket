@@ -12,13 +12,13 @@ class ServerSocket extends SocketBase
       throw $this->last_error();
     return $this;
   }
-  public function origin_accept()
+  public function _accept()
   {
     return socket_accept($this->socket);
   }
   public function accept():ClientSocket
   {
-    $socket = $this->origin_accept();
+    $socket = $this->_accept();
     
     return new ClientSocket(
       $this->domin_type,
@@ -30,4 +30,5 @@ class ServerSocket extends SocketBase
   {
     return socket_select($reads,$writes,$excepts,$t_sec,$t_usec);
   }
+  
 }

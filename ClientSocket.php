@@ -8,4 +8,27 @@ class ClientSocket extends SocketBase
       throw $this->last_error();
     return $this;
   }
+    public function getPeerName():?string
+  {
+    $code = socket_getpeername($this->socket,$address);
+    return $code ? $address : null;
+  }
+  
+  public function getPeerAddr():?string
+  {
+    $code = socket_getpeername($this->socket,$address,$port);
+    return $code ? $address.":".$port : null;
+  }
+  
+  public function recPeerName(&$name):SocketBase
+  {
+    $name = $this->getPeerName();
+    return $this;
+  }
+  
+  public function recPeerAddr(&$addr):SocketBase
+  {
+    $addr = $this->getPeerAddr();
+    return $this;
+  }
 }
