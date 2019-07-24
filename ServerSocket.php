@@ -32,7 +32,7 @@ class ServerSocket extends SocketBase
     $cwrites = SocketBase::getSocketResources($writes);
     $cexcepts = SocketBase::getSocketResources($excepts);
     $reads = $writes = $excepts = [];
-    $code = $this->select($creads,$cwrites,$cexcepts,$t_sec,$t_usec);
+    $code = $this->_select($creads,$cwrites,$cexcepts,$t_sec,$t_usec);
     if($code > 0) {
       if(in_array($this->socket,$creads)) {
         $reads[] = $this;
@@ -57,7 +57,7 @@ class ServerSocket extends SocketBase
     $writes = $excepts = [];
     $code = $this->select($reads,$writes,$excepts,0);
     if($code > 0 && in_array($this,$reads)) {
-      return $this->getClientInstance($this->accept());
+       return $this->accept();
     }
     return null;
   }

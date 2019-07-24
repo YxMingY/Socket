@@ -136,10 +136,11 @@ abstract class SocketBase
     return $this->socket;
   }
   
+  /* param SocketBase[] */
   public static function getSocketResources(array $sockets):array
   {
     $res = [];
-    foreach($socket as $socket)
+    foreach($sockets as $socket)
     {
       $res[] = $socket->getSocketResource();
     }
