@@ -28,13 +28,37 @@ class ServerSocket extends SocketBase
   
   public function select(array &$reads,array &$writes,array &$excepts,int $t_sec,int $t_usec = 0):int
   {
-    $reads = SocketBase::getSocketResources($reads);
-    $writes = SocketBase::getSocketResources($writes);
-    $excepts = SocketBase::getSocketResources($excepts);
-    $code = $this->select($reads,$writes,$excepts,$t_sec,$t_usec);
+    $creads = SocketBase::getSocketResources($reads);
+    $cwrites = SocketBase::getSocketResources($writes);
+    $cexcepts = SocketBase::getSocketResources($excepts);
+    $reads = $writes = $excepts = [];
+    $code = $this->select($creads,$cwrites,$cexcepts,$t_sec,$t_usec);
     if($code > 0) {
-      foreach($writes)
+      if(in_array($this->socket,$creads)) {
+        $reads[] = $this;
+        $key = array_search($this->socket,$creads);
+        unset($creads[$key]);
+      }
+      foreach($creads as $read) {
+          $reads[] = $this->getClientInstance($read);
+      }
+      foreach($cwrites as $write) {
+          $writes[] = $this->getClientInstance($write);
+      }
+      foreach($cexcepts as $except) {
+          $excepts[] = $this->getClientInstance($except);
+      }
     }
+    return $code;
   }
-  
+  public function selectNewClient():?ClientSocket
+  {
+    $reads = [$this,];
+    $writes = $excepts = [];
+    $code = $this->select($reads,$writes,$excepts,0);
+    if($code > 0 && in_array($this,$reads)) {
+      return $this->getClientInstance($this->accept());
+    }
+    return null;
+  }
 }
