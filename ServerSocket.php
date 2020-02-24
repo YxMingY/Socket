@@ -26,7 +26,7 @@ class ServerSocket extends SocketBase
     return socket_select($reads,$writes,$excepts,$t_sec,$t_usec);
   }
   
-  public function select(array &$reads,array &$writes,array &$excepts,int $t_sec,int $t_usec = 0):int
+public function select(array &$reads,array &$writes,array &$excepts,int $t_sec,int $t_usec = 0):int
   {
     foreach($reads as $read) {
       if($read->closed) return -1;
@@ -42,25 +42,26 @@ class ServerSocket extends SocketBase
     $cexcepts = get_resources($excepts);
     $reads = $writes = $excepts = [];
     $code = $this->_select($creads,$cwrites,$cexcepts,$t_sec,$t_usec);
+    //var_dump(error_get_last());
     if($code !== false && $code !== null && $code > 0) {
       if(in_array($this->socket,$creads)) {
         $reads[] = $this;
         $key = array_search($this->socket,$creads);
         unset($creads[$key]);
       }
-      foreach($creads as $read) {
-          $reads[] = $this->getClientInstance($read);
+      foreach($creads as $key=>$read) {
+          $reads[$key] = $this->getClientInstance($read,$key);
       }
-      foreach($cwrites as $write) {
-          $writes[] = $this->getClientInstance($write);
+      foreach($cwrites as $key=>$write) {
+          $writes[$key] = $this->getClientInstance($write,$key);
       }
-      foreach($cexcepts as $except) {
-          $excepts[] = $this->getClientInstance($except);
+      foreach($cexcepts as $key=>$except) {
+          $excepts[$key] = $this->getClientInstance($except,$key);
       }
     }
     if($code === false || $code === null) {
-    var_dump($code);
-    exit();
+       var_dump($code);
+       exit();
     }
     return $code ?? -1;
   }
