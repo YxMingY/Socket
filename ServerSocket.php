@@ -19,7 +19,7 @@ class ServerSocket extends SocketBase
   public function accept():ClientSocket
   {
     $socket = $this->_accept();
-    return $this->getClientInstance($socket);
+    return ($socket !== false ? $this->getClientInstance($socket) : null);
   }
   public function _select(array &$reads,array &$writes,array &$excepts,int $t_sec,int $t_usec = 0):int
   {
