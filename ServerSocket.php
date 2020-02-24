@@ -5,28 +5,64 @@ class ServerSocket extends SocketBase
   
   const SELECT_BLOCK = null;
   const SELECT_NONBLOCK = 0;
-  
+
+  /**
+   * @param int $backlog
+   * @return ServerSocket
+   * @throws \Exception
+   */
   public function listen(int $backlog = 0):ServerSocket
   {
     if(socket_listen($this->socket,$backlog) === false)
       throw $this->last_error();
     return $this;
   }
+
+  /**
+   * @return resource
+   */
   public function _accept()
   {
     return socket_accept($this->socket);
   }
-  public function accept():ClientSocket
+
+  /**
+   * @return ClientSocket|null
+   * @throws \Exception
+   */
+  public function accept():?ClientSocket
   {
     $socket = $this->_accept();
     return ($socket !== false ? $this->getClientInstance($socket) : null);
   }
-  public function _select(array &$reads,array &$writes,array &$excepts,int $t_sec,int $t_usec = 0):int
+
+  /**
+   * @param array $reads
+   * @param array $writes
+   * @param array $excepts
+   * @param int $t_sec
+   * @param int $t_usec
+   * @return int
+   */
+  public function _select(array &$reads, array &$writes, array &$excepts, int $t_sec, int $t_usec = 0):int
   {
-    return socket_select($reads,$writes,$excepts,$t_sec,$t_usec);
+    try {
+      return socket_select($reads, $writes, $excepts, $t_sec, $t_usec);
+    }catch (\Exception $e){
+      exit();
+    }
   }
-  
-public function select(array &$reads,array &$writes,array &$excepts,int $t_sec,int $t_usec = 0):int
+
+  /**
+   * @param array $reads
+   * @param array $writes
+   * @param array $excepts
+   * @param int $t_sec
+   * @param int $t_usec
+   * @return int
+   * @throws \Exception
+   */
+  public function select(array &$reads, array &$writes, array &$excepts, int $t_sec, int $t_usec = 0):int
   {
     foreach($reads as $read) {
       if($read->closed) return -1;
@@ -65,6 +101,11 @@ public function select(array &$reads,array &$writes,array &$excepts,int $t_sec,i
     }
     return $code ?? -1;
   }
+
+  /**
+   * @return ClientSocket|null
+   * @throws \Exception
+   */
   public function selectNewClient():?ClientSocket
   {
     $reads = [$this,];
@@ -75,13 +116,19 @@ public function select(array &$reads,array &$writes,array &$excepts,int $t_sec,i
     }
     return null;
   }
+
+  /**
+   * @param array $clients
+   * @return ClientSocket|null
+   * @throws \Exception
+   */
   public function selectNewMessage(array $clients):?ClientSocket
   {
     if(empty($clients)) return null;
     $writes = $excepts = [];
     $code = $this->select($clients,$writes,$excepts,0);
     if($code > 0 && count($clients) > 0) {
-       return $clients[0];
+       return array_shift($clients);
     }
     return null;
   }

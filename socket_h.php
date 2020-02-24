@@ -1,5 +1,7 @@
 <?php
 namespace yxmingy;
+set_time_limit(0);
+ob_implicit_flush();
 require_once __DIR__."/SocketBase.php";
 require_once __DIR__."/ClientSocket.php";
 require_once __DIR__."/ServerSocket.php";
@@ -7,15 +9,21 @@ require_once __DIR__."/ServerSocket.php";
   function get_resources(array $sockets):array
   {
     $res = [];
-    foreach($sockets as $socket)
+    foreach($sockets as $key=>$socket)
     {
-      $res[] = $socket->getSocketResource();
+      $res[$key] = $socket->getSocketResource();
     }
     return $res;
   }
-  function batch_write(array $sockets,string $msg)
+
+/**
+ * @param array $sockets
+ * @param string $msg
+ */
+function batch_write(array $sockets, string $msg)
   {
     foreach($sockets as $socket) {
-      $socket->write($msg);
+      if(!$socket->closed())
+        $socket->write($msg);
     }
   }
