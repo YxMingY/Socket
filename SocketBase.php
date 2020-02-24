@@ -47,11 +47,10 @@ abstract class SocketBase
   {
     return new ServerSocket($this->domin_type,$this->type,$resource);
   }
-  public function getClientInstance($resource)
+  public function getClientInstance($resource,$cid = null)
   {
-    return new ClientSocket($this->domin_type,$this->type,$resource);
+    return new ClientSocket($this->domin_type,$this->type,$resource,$cid);
   }
-  
   public function bind(string $address = '0',int $port = 0):SocketBase
   {
     socket_bind($this->socket,$address,$port);
