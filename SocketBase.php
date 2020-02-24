@@ -126,6 +126,16 @@ abstract class SocketBase
     $this->close();
   }
   
+  public function preClose():void
+  {
+    $this->closed = true;
+  }
+
+  public function closed():bool
+  {
+    return $this->closed;
+  }
+  
   protected function last_error():\Exception
   {
     return new \Exception("[Socket] Error ".socket_strerror(socket_last_error()));
