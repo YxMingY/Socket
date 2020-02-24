@@ -2,6 +2,14 @@
 namespace yxmingy;
 class ClientSocket extends SocketBase
 {
+  protected $cid = null;
+
+  //Used when selected
+  public function __construct(int $domin = AF_INET,int $type = SOCK_STREAM, $socket = null, $cid = null)
+  {
+    parent::__construct($domin,$type,$socket);
+    $this->cid = $cid;
+  }
   public function connect(string $address,int $port = 0):ClientSocket
   {
     if(socket_connect($this->socket,$address,$port) === false)
@@ -22,7 +30,10 @@ class ClientSocket extends SocketBase
   
   public function cid():?string
   {
-    return md5($this->getPeerAddr());
+    if($this->cid === null){
+      $this->cid = md5($this->getPeerAddr());
+    }
+    return $this->cid;
   }
   
   public function recPeerName(&$name):SocketBase
